@@ -2,24 +2,26 @@
 
 ## The product in one sentence
 
-**For small real-estate teams whose listing is blocked by one missing piece of
-property proof, OpenHouse Recapture turns the gap into an exact, accountable
-recapture mission across the tools their team already uses.**
+**For small and mid-sized real-estate teams that lack the production resources
+of large brokerages, OpenHouse Recapture turns an incomplete media set into an
+exact, accountable recapture mission across the tools their team already uses.**
 
 ## The human story
 
-A realtor has photographed a beautiful property. Buyers can see the living
-room and the pool, but there is no continuous proof showing how they connect.
-That small missing link prevents the listing from meeting the team’s quality
-bar before publishing to the marketplaces where buyers already search.
+A realtor has photographed a beautiful property, but an immersive experience
+requires a complete, usable media set. A room may be missing, footage may be
+too dark, or a key transition may be absent. Large brokerages can absorb the
+cost of another professional production pass; small teams often cannot. That
+gap prevents the property from reaching the team’s premium quality bar.
 
 Instead of the realtor coordinating calls, folders, and reminders manually,
 OpenHouse Recapture creates one field mission with one shared record.
 
 ## What the agent does
 
-1. Receives a **bounded evidence gap** from OpenHouse’s media review—such as
-   `living room → pool terrace` has no continuous path.
+1. Receives a **bounded media gap** from OpenHouse’s media review—such as a
+   missing garden terrace, low-light primary bedroom footage, or a missing
+   `living room → pool terrace` transition.
 2. Uses Gemini only for the human-facing, concise capture instruction. It may
    never invent rooms or declare a property ready by itself.
 3. Applies deterministic policy:

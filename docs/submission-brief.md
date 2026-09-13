@@ -2,18 +2,19 @@
 
 ## The problem
 
-A listing can look complete in photos yet still fail the buyer's most basic
-question: *how do these two spaces connect?* For a small real-estate team,
-fixing one missing 20-second proof often means chasing a photographer,
+Small and mid-sized real-estate teams want to present homes with the polish of
+large brokerages, but premium immersive property experiences depend on complete,
+well-captured source media. When a walkthrough is missing a room, is too dark,
+skips a required angle, or fails to show an important transition, the whole
+experience may be held back. Fixing that one gap means chasing a photographer,
 negotiating a time, creating folders, and following up across several tools.
-That delay holds back the listing from the marketplaces where buyers already
-search.
 
 ## The agent
 
-OpenHouse Recapture converts one bounded media-evidence gap into an accountable
-field mission. For example: **“There is no continuous proof from the living
-room to the pool terrace.”**
+OpenHouse Recapture converts one bounded media gap into an accountable field
+mission. Examples include: **“The primary bedroom is too dark to use,”**
+**“the garden terrace was never captured,”** or **“there is no continuous
+living-room-to-pool route.”**
 
 The agent turns that into a precise instruction, checks durable mission state,
 requires approval when policy demands it, then coordinates the work across:
@@ -42,6 +43,7 @@ approve, or resolve a mission.
 ## Product boundary
 
 OpenHouse Recapture is an upstream evidence and operations layer. It helps a
-small team prepare quality property media for the publishing channels they use,
-including Zillow, Airbnb, and MLS workflows. It does not claim to generate or
-upload a universal 3D-tour file to those platforms.
+small team collect the complete, quality source media needed to build an
+immersive property experience and prepare it for the publishing channels they
+use, including Zillow, Airbnb, and MLS workflows. It does not claim to generate
+or upload a universal 3D-tour file to those platforms.

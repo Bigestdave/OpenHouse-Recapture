@@ -1,17 +1,17 @@
 # OpenHouse Recapture
 
-**One missing 20-second proof can stop a property from being ready for the marketplaces where buyers already search. OpenHouse Recapture turns that gap into one precise, auditable field mission.**
+**Small real-estate teams should not need a large production budget to create a premium, immersive property experience. OpenHouse Recapture turns the exact missing media—from an unrecorded room to weak footage—into one precise, auditable field mission.**
 
 > **Two-minute demo:** Add the final public video URL here before submitting.
 > **System and reliability brief:** [`docs/submission-brief.md`](./docs/submission-brief.md)
 
-It is a multi-step operations agent for small real-estate teams. Starting from a bounded media-evidence gap, it writes a specific recapture instruction, applies a deterministic policy, coordinates the field handoff, and keeps a durable record of every outcome.
+It is a multi-step operations agent for small and mid-sized real-estate teams. Starting from a bounded media gap, it writes a specific recapture instruction, applies a deterministic policy, coordinates the field handoff, and keeps a durable record of every outcome. The result is a more complete input set for OpenHouse's immersive property experience—not a claim that any one new clip automatically creates a finished 3D tour.
 
 ## The workflow
 
 ```mermaid
 flowchart LR
-  A[Evidence gap\nLiving room → pool] --> B[OpenHouse Recapture agent]
+  A[Media gap\nmissing room, path, or usable footage] --> B[OpenHouse Recapture agent]
   B --> C{Policy and\nduplicate check}
   C -->|Needs approval| D[Realtor approves]
   C -->|Safe to dispatch| E[Google Calendar\ncheck + event]
@@ -23,7 +23,7 @@ flowchart LR
   I --> J[Resolved or precise follow-up]
 ```
 
-The product is an upstream quality and operations layer. It does **not** claim to generate a universal Zillow or Airbnb 3D file. It helps a realtor obtain the specific, usable evidence needed before publishing to the channels they use.
+The product is an upstream quality and operations layer. It does **not** claim to generate a universal Zillow or Airbnb 3D file. It helps a realtor obtain the complete, usable media needed to build a premium immersive experience before publishing to the channels they use.
 
 ## Multi-app integrations
 
@@ -86,7 +86,7 @@ or submission.
 
 ## Hackathon demo in one sentence
 
-> A property is ready for Zillow, Airbnb, or the MLS—but one missing 20-second proof is holding it back. OpenHouse Recapture gets the exact footage, from the right person, at the right time, with an audit trail.
+> A small real-estate team has the property, but not the production resources to create a premium immersive experience. OpenHouse Recapture gets the exact missing footage, from the right person, at the right time, with an audit trail.
 
 ## Foundation disclosure
 
