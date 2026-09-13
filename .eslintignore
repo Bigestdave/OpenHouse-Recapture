@@ -1,0 +1,6 @@
+# Historical captures are not application source. They intentionally preserve
+# intermediate AI edits, including syntax that should never participate in the
+# active quality gate.
+exact_state_use_this_image/
+snapshot_line_1446/
+snapshot_timeline_activity/

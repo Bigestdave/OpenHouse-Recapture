@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenHouse</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0B1713;
+      color: #F2EEE5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      padding: 32px;
+    }
+    .logo { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #7FB896; }
+    h1 { font-size: 22px; font-weight: 700; text-align: center; }
+    p.sub { font-size: 13px; color: #7FB896; text-align: center; max-width: 380px; line-height: 1.6; }
+    .card { background: #142019; border: 1px solid #2A3D2F; border-radius: 16px; padding: 28px 32px; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 16px; }
+    .card-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #7FB896; }
+    .property-name { font-size: 17px; font-weight: 700; color: #F2EEE5; }
+    .property-sub { font-size: 13px; color: #9AB8A3; }
+    .delay-row { display: flex; gap: 8px; align-items: center; }
+    .delay-label { font-size: 12px; color: #7FB896; flex-shrink: 0; }
+    select { flex: 1; background: #0B1713; border: 1px solid #2A3D2F; border-radius: 8px; color: #F2EEE5; font-size: 13px; padding: 8px 12px; cursor: pointer; }
+    button.fire { width: 100%; background: #2F613D; color: #F2EEE5; font-size: 15px; font-weight: 700; border: none; border-radius: 12px; padding: 16px; cursor: pointer; transition: background 0.15s; }
+    button.fire:hover { background: #3A7A4D; }
+    button.fire:disabled { background: #1A3020; color: #4A7055; cursor: not-allowed; }
+    .countdown { font-size: 64px; font-weight: 800; color: #7FB896; text-align: center; display: none; line-height: 1; }
+    .status { font-size: 13px; text-align: center; color: #9AB8A3; min-height: 20px; }
+    hr { border: none; border-top: 1px solid #2A3D2F; }
+    .perm-warning { background: #3D2A0D; border: 1px solid #6B4C1A; border-radius: 10px; padding: 12px 16px; font-size: 12.5px; color: #D4AA70; line-height: 1.6; display: none; }
+    .steps { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 0; }
+    .steps h2 { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #7FB896; margin-bottom: 12px; }
+    .step { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #1C2E21; }
+    .step:last-child { border-bottom: none; }
+    .step-num { width: 22px; height: 22px; border-radius: 50%; background: #2A3D2F; color: #7FB896; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .step-text { font-size: 13px; color: #C8DCC9; line-height: 1.5; }
+    .step-text strong { color: #F2EEE5; }
+  </style>
+</head>
+<body>
+  <div class="logo">OpenHouse</div>
+  <h1>Notification Trigger</h1>
+  <p class="sub">Switch to Zillow after pressing fire. The notification will pop over whatever tab you are on.</p>
+
+  <div id="permWarning" class="perm-warning">
+    <strong>Notifications blocked.</strong> Click the lock icon in your address bar and set Notifications to Allow, then refresh.
+  </div>
+
+  <div class="card">
+    <div class="card-label">Property</div>
+    <div class="property-name">72691 Homestead Road, Palm Desert</div>
+    <div class="property-sub">4-Bedroom Estate with Guest House &middot; CA 92260</div>
+    <hr />
+    <div class="delay-row">
+      <div class="delay-label">Delay</div>
+      <select id="delaySelect">
+        <option value="3000">3 seconds</option>
+        <option value="5000" selected>5 seconds</option>
+        <option value="7000">7 seconds</option>
+        <option value="10000">10 seconds</option>
+      </select>
+    </div>
+    <div id="countdown" class="countdown">5</div>
+    <button class="fire" id="fireBtn" onclick="startCountdown()">Fire Notification</button>
+    <div id="status" class="status">Ready. Click fire, then immediately switch to Zillow.</div>
+  </div>
+
+  <div class="steps">
+    <h2>How to use in recording</h2>
+    <div class="step"><div class="step-num">1</div><div class="step-text">Keep this tab open. <strong>Allow notifications</strong> when the browser prompts you.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-text">Switch to <strong>Zillow</strong> in another tab. Get the listing on screen and ready.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-text">Come back here, click <strong>Fire Notification</strong>. The countdown starts.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Immediately switch back to Zillow.</strong> The Windows notification pops in the corner automatically.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-text">Let it sit for 3 seconds &mdash; that is your <strong>hero moment on camera.</strong></div></div>
+  </div>
+
+  <script>
+    window.addEventListener("load", () => {
+      if (!("Notification" in window)) {
+        document.getElementById("status").textContent = "Browser does not support notifications.";
+        document.getElementById("fireBtn").disabled = true;
+        return;
+      }
+      if (Notification.permission === "denied") {
+        document.getElementById("permWarning").style.display = "block";
+        document.getElementById("fireBtn").disabled = true;
+      } else if (Notification.permission === "default") {
+        Notification.requestPermission();
+      }
+    });
+
+    function sendNotification() {
+      const icon = "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#194534"/><path d="M32 14L14 28v22h12V36h12v14h12V28L32 14z" fill="#7FB896"/></svg>');
+      const n = new Notification("OpenHouse", {
+        body: "72691 Homestead Road, Palm Desert detected. Building your 3D inspection experience now.",
+        icon: icon,
+        requireInteraction: false,
+      });
+      n.onclick = () => { window.focus(); n.close(); };
+      document.getElementById("status").textContent = "Notification sent.";
+      document.getElementById("fireBtn").textContent = "Fire Again";
+      document.getElementById("fireBtn").disabled = false;
+    }
+
+    function startCountdown() {
+      if (Notification.permission === "denied") return;
+      if (Notification.permission === "default") {
+        Notification.requestPermission().then(p => { if (p === "granted") run(); });
+      } else { run(); }
+    }
+
+    function run() {
+      const delay = parseInt(document.getElementById("delaySelect").value);
+      let remaining = delay / 1000;
+      const btn = document.getElementById("fireBtn");
+      const cd = document.getElementById("countdown");
+      const st = document.getElementById("status");
+      btn.disabled = true;
+      btn.textContent = "Counting...";
+      cd.style.display = "block";
+      cd.textContent = remaining;
+      st.textContent = "Switch to Zillow NOW!";
+      const t = setInterval(() => {
+        remaining--;
+        cd.textContent = remaining;
+        if (remaining <= 0) {
+          clearInterval(t);
+          cd.style.display = "none";
+          btn.textContent = "Fire Notification";
+          st.textContent = "";
+          sendNotification();
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

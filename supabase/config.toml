@@ -1,0 +1,8 @@
+[functions.openhouse-workflow]
+verify_jwt = false
+
+[functions.openhouse-ai]
+verify_jwt = false
+
+[functions.openhouse-recapture]
+verify_jwt = false

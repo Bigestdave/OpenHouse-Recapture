@@ -1,0 +1,270 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* OpenHouse Sunlit Architectural Editorial Palette */
+  --color-canvas: #F2EEE5;            /* Warm limestone workspace */
+  --color-app: #F2EEE5;               /* Alias for main workspace canvas */
+  --color-surface: #FBF8F2;           /* Primary card and control surface */
+  --color-surface-elevated: #FFFDF8;  /* Elevated cards, menus, selected tabs */
+  --color-raised: #FFFDF8;            /* Alias for elevated surface */
+  --color-raised-2: #ECE7DC;          /* Subtle hover on light surfaces */
+  --color-selected: #E7E1D4;          /* Selected light surface */
+
+  --color-sidebar: #0B1713;           /* Deep green-black sidebar */
+  --color-sidebar-active: #17281F;    /* Active navigation / elevated sidebar surface */
+  --color-panel-dark: #112019;        /* Dark featured property panel */
+
+  --color-text-primary: #17231E;      /* Primary text on light surfaces */
+  --color-ink: #17231E;               /* Alias for primary text */
+  --color-text-secondary: #727A73;    /* Secondary text / metadata on light surfaces */
+  --color-ink-2: #727A73;             /* Alias for secondary text */
+  --color-ink-3: #9CA29D;             /* Muted text on light surfaces */
+  --color-ink-4: #BFC4BF;             /* Disabled text */
+  --color-ink-5: #DDD7CB;             /* Faint divider */
+
+  --color-text-inverse: #F5F0E7;      /* Primary text on dark surfaces (warm ivory) */
+  --color-text-inverse-muted: #A9B1AA;/* Secondary text on dark surfaces */
+
+  --color-border: #DDD7CB;            /* Borders on light surfaces */
+  --color-line: #DDD7CB;              /* Alias for light border */
+  --color-line-soft: #E8E3D8;         /* Soft light border */
+  --color-line-strong: #C8C2B4;       /* Strong light border */
+  --color-border-dark: #293A32;       /* Borders on dark surfaces */
+
+  --color-primary: #194534;           /* Deep architectural green for primary actions */
+  --color-primary-hover: #123A2B;     /* Primary action hover */
+  --color-accent: #D97945;            /* Sunset copper signature colour */
+  --color-accent-hover: #C96837;      /* Copper hover */
+  --color-accent-soft: rgba(217, 121, 69, 0.10); /* Soft copper background */
+  --color-accent-medium: rgba(217, 121, 69, 0.20);
+  --color-accent-border: rgba(217, 121, 69, 0.40);
+  --color-accent-ink: #FFFFFF;
+
+  --color-success: #57856C;           /* Genuine Live / completed state */
+  --color-warn: #D97945;              /* Semantic Attention (Copper) */
+  --color-danger: #B64D47;            /* Semantic Danger */
+  --color-info: #496A80;              /* Semantic Info */
+
+  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Restrained architectural shadows */
+.shadow-subtle {
+  box-shadow: 0 1px 3px rgba(23, 35, 30, 0.04), 0 1px 2px rgba(23, 35, 30, 0.02);
+}
+
+.shadow-card {
+  box-shadow: 0 4px 12px rgba(23, 35, 30, 0.04), 0 1px 3px rgba(23, 35, 30, 0.02);
+}
+
+.shadow-featured {
+  box-shadow: 0 16px 40px rgba(24, 34, 29, 0.08);
+}
+
+.shadow-overlay {
+  box-shadow: 0 20px 48px rgba(11, 23, 19, 0.16);
+}
+
+/* The property intake is focused work rather than dense dashboard metadata. */
+.property-intake input,
+.property-intake select,
+.property-intake textarea {
+  font-size: 14px;
+}
+
+.property-intake label > span:first-child {
+  font-size: 12px;
+}
+
+.property-intake .text-\[10px\] {
+  font-size: 11px;
+}
+
+.property-intake .text-\[10\.5px\] {
+  font-size: 12px;
+}
+
+.property-intake .text-\[11px\] {
+  font-size: 12px;
+}
+
+.property-intake .text-\[9\.5px\] {
+  font-size: 11px;
+}
+
+/* Custom scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #DDD7CB transparent;
+}
+*::-webkit-scrollbar { height: 6px; width: 6px; }
+*::-webkit-scrollbar-thumb { background: #DDD7CB; border-radius: 3px; }
+*::-webkit-scrollbar-thumb:hover { background: #C8C2B4; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ultra-Premium Glassmorphism System */
+.glass-card-dark {
+  background: rgba(18, 18, 18, 0.62);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.glass-card-light {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(40px) saturate(150%);
+  -webkit-backdrop-filter: blur(40px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 28px 72px rgba(11, 23, 19, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.glass-dock {
+  background: rgba(15, 15, 15, 0.55);
+  backdrop-filter: blur(40px) saturate(150%);
+  -webkit-backdrop-filter: blur(40px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.glass-button-wrap {
+  position: relative;
+  display: inline-flex;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 100%);
+  padding: 1px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-button-wrap:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.glass-button {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #FFFFFF;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.glass-button-shadow {
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  border-radius: 9999px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+/* Demo toast slide-in animation */
+@keyframes slideInRight {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.animate-slideInRight {
+  animation: slideInRight 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* OpenHouse Editorial Landing Page Styles */
+.mono-label {
+  font-family: 'DM Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  line-height: 1.4;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.serif {
+  font-family: 'Instrument Serif', Georgia, serif;
+}
+
+.page-grid {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.045) 1px, transparent 1px);
+  background-size: 25% 100%;
+}
+
+.dot-field {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.3) .75px, transparent .75px);
+  background-size: 5px 5px;
+  mask-image: linear-gradient(90deg, transparent, black 20%, black 80%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 20%, black 80%, transparent);
+}
+
+.architectural-door {
+  position: relative;
+  isolation: isolate;
+}
+
+.architectural-door::before,
+.architectural-door::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.25) .7px, transparent .7px);
+  background-size: 5px 5px;
+  opacity: .65;
+}
+
+.architectural-door::before {
+  transform: translate(-25%, 5%) skewY(-4deg);
+  mask-image: linear-gradient(90deg, black, transparent 72%);
+  -webkit-mask-image: linear-gradient(90deg, black, transparent 72%);
+}
+
+.architectural-door::after {
+  transform: translate(29%, 0) skewY(4deg);
+  mask-image: linear-gradient(90deg, transparent 28%, black);
+  -webkit-mask-image: linear-gradient(90deg, transparent 28%, black);
+}
+
+.dark-panel {
+  background: #11120f;
+  color: #efeee9;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .7s ease, transform .7s cubic-bezier(.22, .75, .2, 1);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: .08s; }
+.reveal-delay-2 { transition-delay: .16s; }
+.reveal-delay-3 { transition-delay: .24s; }
+
