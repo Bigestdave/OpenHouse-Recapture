@@ -4,7 +4,7 @@ import { Camera, Clock, Ellipsis, House, ImageOff, LoaderCircle, Plus, Search, S
 import { WorkspaceShell } from '../components/WorkspaceShell'
 import { useStore } from '../data/store'
 import { listProductionProperties } from '../lib/productionWorkflow'
-import emptyPropertiesArt from 'C:/Users/David PC/Downloads/blank state image.png'
+import emptyPropertiesArt from '../assets/blank-state-house.png'
 
 type PropertyRecord = Awaited<ReturnType<typeof listProductionProperties>>[number]
 const filters = ['All', 'Preparing', 'Needs attention', 'Ready', 'Live'] as const
