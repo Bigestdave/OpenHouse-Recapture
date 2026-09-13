@@ -55,3 +55,4 @@ export function Waveform({ bars = 160, height = 44, color = 'var(--color-accent)
     </svg>
   )
 }
+

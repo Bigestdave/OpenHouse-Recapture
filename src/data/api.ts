@@ -442,3 +442,4 @@ export const approveAttempt = (shotId: string, attemptId: string) =>
   fetchJson(`/shots/${encodeURIComponent(shotId)}/approve-attempt?attempt_id=${encodeURIComponent(attemptId)}`, { method: 'POST' })
 export const approveProduction = (productionId: string) =>
   fetchJson<{ message: string; status: string }>(`/productions/${encodeURIComponent(productionId)}/approve`, { method: 'POST' })
+

@@ -537,3 +537,4 @@ export async function syncWithSupabase(): Promise<void> {
   notify();
 }
 
+

@@ -221,3 +221,4 @@ export function listListingSources(workspaceId: string) {
 export function createListingSource(workspaceId: string, input: { name: string; kind: ListingSource['kind']; endpoint?: string; credentialSecretRef?: string; provider?: string }) {
   return callWorkflow<ListingSource>('create_listing_source', { workspaceId, input })
 }
+

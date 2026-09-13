@@ -74,3 +74,4 @@ export function Stepper({ steps, currentStep, onStepClick, className = '' }: Ste
     </div>
   )
 }
+

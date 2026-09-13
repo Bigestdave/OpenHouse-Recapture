@@ -156,3 +156,4 @@ export function WaveIcon({ size = 18, className = '', strokeWidth = 1.5, ...prop
 export function HandIcon({ size = 18, className = '', strokeWidth = 1.5, ...props }: IconProps) {
   return <HandCard width={size} height={size} strokeWidth={strokeWidth} className={className} {...props} />
 }
+

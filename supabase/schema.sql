@@ -95,3 +95,4 @@ ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 -- Deliberately no public policies. A table with RLS enabled and no policy is
 -- inaccessible to browser clients by default. Apply the production migration
 -- after this schema to add workspace-scoped policies and private media buckets.
+

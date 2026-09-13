@@ -45,3 +45,4 @@ export async function askOpenHouseAssistant(
   }
   return invokeOpenHouseAi<{ answer: string; badge: string }>('answer', { question, propertyContext })
 }
+

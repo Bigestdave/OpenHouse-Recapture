@@ -258,3 +258,4 @@ export function getSeedData(): StoreState {
     initialized: true,
   };
 }
+

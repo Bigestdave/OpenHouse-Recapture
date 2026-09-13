@@ -56,3 +56,4 @@ function TextShimmerComponent({
 
 export const TextShimmer = React.memo(TextShimmerComponent);
 export default TextShimmer;
+

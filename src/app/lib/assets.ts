@@ -20,3 +20,4 @@ export const IMAGES = {
   necklace:
     "https://images.unsplash.com/photo-1721807551235-4072be6913c0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
 } as const;
+

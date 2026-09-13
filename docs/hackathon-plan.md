@@ -109,3 +109,4 @@ combines model language generation with durable state and explicit constraints:
   the result is visible. Otherwise say the policy template is in use.
 - Do not claim OpenHouse outputs Zillow/Airbnb 3D files. It is the upstream
   evidence and operations layer that helps teams get ready to publish.
+

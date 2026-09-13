@@ -98,3 +98,4 @@ export function AuthScreen() {
     <aside className="relative hidden overflow-hidden bg-[#f5f0e7] lg:block"><img src={imgPointCloudDoorway} alt="A doorway into an OpenHouse property experience" className="absolute inset-0 h-full w-full object-cover object-center" /><div className="absolute right-14 top-28 font-mono text-[11px] leading-6 tracking-tight text-ink/80"><p>PROPERTY&nbsp; / &nbsp;OH-00241</p><p>SPACES&nbsp;&nbsp;&nbsp; / &nbsp;07</p><p>EVIDENCE&nbsp; / &nbsp;VERIFIED</p><p>STATUS&nbsp;&nbsp;&nbsp; / &nbsp;READY</p><span className="mt-3 block h-px w-7 bg-primary" /></div></aside>
   </div></div>
 }
+

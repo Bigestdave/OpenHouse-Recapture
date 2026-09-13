@@ -147,3 +147,4 @@ with check (
     where c.id = (storage.foldername(name))[1] and public.is_workspace_member(p.workspace_id)
   )
 );
+

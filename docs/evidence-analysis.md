@@ -35,3 +35,4 @@ The Edge Function analyzes at most 12 assets per run and uses inline media only 
 ## Gemini setup
 
 Store `GEMINI_API_KEY` only in Supabase **Edge Function Secrets**. Optionally set `GEMINI_MODEL`; otherwise OpenHouse uses `gemini-3.7-flash`. Do not put either value in `.env.local` or frontend code.
+

@@ -1001,3 +1001,4 @@ export function MobileCaptureScreen() {
     </div>
   )
 }
+

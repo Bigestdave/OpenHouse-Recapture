@@ -306,3 +306,4 @@ export async function syncBookingToCloud(booking: Booking): Promise<void> {
     console.warn('[SupabaseStore] Failed to sync booking:', err)
   }
 }
+

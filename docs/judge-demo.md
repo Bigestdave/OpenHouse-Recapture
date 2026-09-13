@@ -47,3 +47,4 @@ Content-Type: application/json
 ```
 
 Use a scheduler that can keep that header secret (Supabase Cron + Vault, GitHub Actions secrets, or another server-side scheduler). Never call this endpoint from the browser.
+

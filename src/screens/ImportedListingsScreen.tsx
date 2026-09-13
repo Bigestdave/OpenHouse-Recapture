@@ -64,3 +64,4 @@ export function ImportedListingsScreen() {
     <aside className="mt-5 flex items-start gap-3 rounded-xl border border-border bg-surface p-4 text-[11px] leading-relaxed text-ink-2"><CircleAlert size={16} className="mt-0.5 shrink-0 text-primary" /><p><span className="font-bold text-ink">Review first.</span> Choose Review & add to prefill the same Add Property form. Attach private listing media, correct any imported fields, then explicitly create and analyze the property.</p></aside>
   </div></main></WorkspaceShell>
 }
+

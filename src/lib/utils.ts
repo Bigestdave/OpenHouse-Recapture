@@ -12,3 +12,4 @@ export function cn(...inputs: (string | undefined | null | false | Record<string
     })
     .join(' ')
 }
+

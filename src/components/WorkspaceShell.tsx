@@ -279,3 +279,4 @@ export function WorkspaceShell({ children, breadcrumb, backTo = '/properties' }:
     </div>
   )
 }
+

@@ -59,3 +59,4 @@ export function approveRecaptureMission(missionId: string, scheduledFor: string)
 export function verifyRecaptureMission(missionId: string, resolved: boolean, remainingReason?: string) {
   return callRecapture<RecaptureMission>('verify_mission', { missionId, resolved, remainingReason })
 }
+

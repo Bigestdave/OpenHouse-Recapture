@@ -40,3 +40,4 @@ export function assertProductionServicesConfigured() {
     throw new Error('Production mode requires VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.')
   }
 }
+
