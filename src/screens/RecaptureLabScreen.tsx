@@ -5,6 +5,7 @@ import { WorkspaceShell } from '../components/WorkspaceShell'
 import { useStore } from '../data/store'
 import { listProductionProperties } from '../lib/productionWorkflow'
 import { approveRecaptureMission, listRecaptureMissions, startRecaptureMission, type RecaptureEvent, type RecaptureMission } from '../lib/recapture'
+import { isDemoMode } from '../lib/runtime'
 
 type Property = { id: string; title: string; address: string; status: string }
 type GapType = RecaptureMission['gap_type']
@@ -15,6 +16,31 @@ const gapLabels: Record<GapType, string> = {
   low_light: 'Footage is too dark',
   poor_coverage: 'Coverage is incomplete',
   blurred_media: 'Footage is blurred',
+}
+
+const demoProperty: Property = { id: 'recapture-demo-property', title: '14 Bourdillon Road', address: 'Ikoyi, Lagos', status: 'needs_recapture' }
+
+function demoEvent(action: RecaptureEvent['action'], actor: RecaptureEvent['actor'], externalApp: RecaptureEvent['external_app'] = null, externalRef: string | null = null, payload: Record<string, unknown> = {}): RecaptureEvent {
+  return { id: `demo-${action}-${crypto.randomUUID()}`, action, actor, external_app: externalApp, external_ref: externalRef, payload, created_at: new Date().toISOString() }
+}
+
+function createDemoMission(): RecaptureMission {
+  const now = new Date()
+  now.setHours(now.getHours() + 2)
+  const instruction = 'Start in the living room. Walk continuously through the garden doors to the garden terrace without cuts, then hold the final terrace view for five seconds. Keep the doorway and route clearly visible. Aim for 20–30 seconds.'
+  return {
+    id: 'recapture-demo-mission', property_id: demoProperty.id, capture_request_id: 'recapture-demo-capture',
+    gap_type: 'missing_connection', from_space: 'Living room', to_space: 'Garden terrace', severity: 'blocking',
+    reason: 'The listing shows both spaces, but no continuous footage proves how a buyer moves from the living room to the garden terrace.',
+    capture_instruction: instruction, status: 'awaiting_realtor_approval', scheduled_for: now.toISOString(),
+    created_at: new Date().toISOString(), updated_at: new Date().toISOString(), property: demoProperty,
+    events: [
+      demoEvent('gap_detected', 'agent', null, null, { captureUrl: '/capture/recapture-demo', source: 'seeded demo scenario' }),
+      demoEvent('instruction_generated', 'agent', null, null, { source: 'policy_template', instruction }),
+      demoEvent('policy_checked', 'agent', null, null, { approvalRequired: true, result: 'awaiting_realtor_approval' }),
+      demoEvent('awaiting_realtor_approval', 'agent', null, null, { reason: 'Realtor approval is required before a photographer is booked.' }),
+    ],
+  }
 }
 
 function statusView(status: RecaptureMission['status']) {
@@ -51,6 +77,13 @@ export function RecaptureLabScreen() {
   const [form, setForm] = useState({ propertyId: '', gapType: 'missing_connection' as GapType, severity: 'blocking' as const, fromSpace: 'Living room', toSpace: 'Pool terrace', reason: 'No continuous footage proves how a visitor moves from the living room to the pool terrace.', scheduledFor: '', approvalRequired: true })
 
   const load = async () => {
+    if (isDemoMode) {
+      setProperties([demoProperty])
+      setMissions((current) => current.length ? current : [createDemoMission()])
+      setForm((previous) => previous.propertyId ? previous : { ...previous, propertyId: demoProperty.id })
+      setLoading(false)
+      return
+    }
     if (!workspace?.id) { setLoading(false); return }
     setLoading(true)
     try {
@@ -73,6 +106,30 @@ export function RecaptureLabScreen() {
     if (!form.propertyId) { setError('Add a property before starting a recapture mission.'); return }
     setSubmitting(true)
     try {
+      if (isDemoMode) {
+        const existing = missions.find((mission) => mission.property_id === form.propertyId && mission.gap_type === form.gapType && mission.from_space === form.fromSpace && mission.to_space === form.toSpace)
+        if (existing) {
+          const replay = demoEvent('mission_deduplicated', 'agent', null, null, { simulated: true, message: 'The original mission was returned; no external action was repeated.' })
+          setMissions((current) => current.map((mission) => mission.id === existing.id ? { ...mission, updated_at: new Date().toISOString(), events: [...(mission.events || []), replay] } : mission))
+          setSelectedId(existing.id)
+          setCreating(false)
+          return
+        }
+        const next = createDemoMission()
+        next.id = `recapture-demo-${crypto.randomUUID()}`
+        next.property_id = form.propertyId
+        next.property = properties.find((property) => property.id === form.propertyId) || demoProperty
+        next.gap_type = form.gapType
+        next.from_space = form.fromSpace || null
+        next.to_space = form.toSpace || null
+        next.reason = form.reason
+        next.scheduled_for = form.scheduledFor ? new Date(form.scheduledFor).toISOString() : null
+        next.status = form.approvalRequired || !next.scheduled_for ? 'awaiting_realtor_approval' : 'planning'
+        setMissions((current) => [next, ...current])
+        setSelectedId(next.id)
+        setCreating(false)
+        return
+      }
       const scheduledFor = form.scheduledFor ? new Date(form.scheduledFor).toISOString() : undefined
       const result = await startRecaptureMission({ ...form, scheduledFor })
       setCreating(false)
@@ -85,9 +142,35 @@ export function RecaptureLabScreen() {
   const approve = async (mission: RecaptureMission) => {
     const scheduledFor = mission.scheduled_for || new Date(Date.now() + 60 * 60 * 1000).toISOString()
     setSubmitting(true)
-    try { await approveRecaptureMission(mission.id, scheduledFor); await load() }
+    try {
+      if (isDemoMode) {
+        const events = [
+          demoEvent('policy_checked', 'realtor', null, null, { approved: true, scheduledFor, simulated: true }),
+          demoEvent('calendar_checked', 'agent', 'google_calendar', 'demo:calendar:booking-014', { available: true, simulated: true }),
+          demoEvent('calendar_event_created', 'agent', 'google_calendar', 'demo:calendar:booking-014', { scheduledFor, simulated: true }),
+          demoEvent('drive_folder_created', 'agent', 'google_drive', 'demo:drive:mission-014', { simulated: true }),
+          demoEvent('telegram_sent', 'agent', 'telegram', 'demo:telegram:mission-014', { simulated: true }),
+          demoEvent('gmail_sent', 'agent', 'gmail', 'demo:gmail:mission-014', { simulated: true }),
+        ]
+        setMissions((current) => current.map((item) => item.id === mission.id ? { ...item, status: 'scheduled', scheduled_for: scheduledFor, updated_at: new Date().toISOString(), events: [...(item.events || []), ...events] } : item))
+        return
+      }
+      await approveRecaptureMission(mission.id, scheduledFor); await load()
+    }
     catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not approve the mission.') }
     finally { setSubmitting(false) }
+  }
+
+  const updateDemoMission = (mission: RecaptureMission, outcome: 'capture' | 'follow_up' | 'resolved' | 'replay') => {
+    if (!isDemoMode) return
+    setMissions((current) => current.map((item) => {
+      if (item.id !== mission.id) return item
+      const at = new Date().toISOString()
+      if (outcome === 'capture') return { ...item, status: 'capture_uploaded', updated_at: at, events: [...(item.events || []), demoEvent('capture_received', 'photographer', null, null, { simulated: true, assetRef: 'demo:clip:garden-terrace-recapture.mp4' })] }
+      if (outcome === 'follow_up') return { ...item, status: 'needs_follow_up', updated_at: at, events: [...(item.events || []), demoEvent('verification_completed', 'agent', null, null, { resolved: false, simulated: true, remainingReason: 'The submitted clip reaches the doors but does not show the garden terrace.' }), demoEvent('mission_escalated', 'agent', null, null, { simulated: true })] }
+      if (outcome === 'resolved') return { ...item, status: 'resolved', updated_at: at, events: [...(item.events || []), demoEvent('verification_completed', 'agent', null, null, { resolved: true, simulated: true }), demoEvent('mission_resolved', 'agent', null, null, { simulated: true })] }
+      return { ...item, updated_at: at, events: [...(item.events || []), demoEvent('mission_deduplicated', 'agent', null, null, { simulated: true, message: 'The original mission was returned; no external action was repeated.' })] }
+    }))
   }
 
   return <WorkspaceShell>
@@ -98,6 +181,7 @@ export function RecaptureLabScreen() {
             <p className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-primary"><Sparkles size={14} /> OpenHouse Recapture</p>
             <h1 className="text-[31px] font-extrabold tracking-tight sm:text-[38px]">Turn a missing proof into a finished listing.</h1>
             <p className="mt-2 text-[14px] leading-6 text-text-secondary">The agent makes one precise capture mission, applies your booking policy, and records every handoff needed to get a property ready for marketplace publishing.</p>
+            {isDemoMode && <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[10.5px] font-bold text-accent"><CircleAlert size={12} /> Demo mode — connector receipts below are simulated.</p>}
           </div>
           <button type="button" onClick={() => setCreating(true)} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-[13px] font-bold text-text-inverse shadow-subtle transition hover:bg-primary-hover"><Plus size={16} /> Start a recapture mission</button>
         </header>
@@ -105,7 +189,7 @@ export function RecaptureLabScreen() {
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <Metric label="Active missions" value={String(activeCount)} detail="A shared source of truth" icon={ShieldCheck} />
           <Metric label="Duplicate protection" value="On" detail="One active mission per evidence gap" icon={CheckCircle2} />
-          <Metric label="External handoffs" value="4" detail="Calendar, Drive, Telegram, Gmail" icon={ArrowRight} />
+          <Metric label="External handoffs" value="4" detail={isDemoMode ? 'Simulated until connected' : 'Calendar, Drive, Telegram, Gmail'} icon={ArrowRight} />
         </div>
 
         {error && <div role="alert" className="mt-5 flex items-start gap-2 rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-[13px] text-danger"><CircleAlert className="mt-0.5 shrink-0" size={16} /><span>{error}</span></div>}
@@ -123,7 +207,7 @@ export function RecaptureLabScreen() {
               </button>
             })}</div>}
           </div>
-          <MissionDetail mission={activeMission} onApprove={approve} approving={submitting} />
+          <MissionDetail mission={activeMission} onApprove={approve} approving={submitting} demoMode={isDemoMode} onDemoAction={updateDemoMission} />
         </section>}
       </div>
 
@@ -144,16 +228,23 @@ function EmptyState({ onCreate, hasProperties }: { onCreate: () => void; hasProp
   return <div className="rounded-2xl border border-dashed border-line-strong bg-surface px-6 py-14 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary"><Sparkles size={21} /></div><h3 className="mt-4 text-[16px] font-bold">No missions yet</h3><p className="mx-auto mt-2 max-w-sm text-[13px] leading-5 text-text-secondary">{hasProperties ? 'When a property has a precise missing proof, create one mission. The agent will keep its schedule, communications, and audit trail together.' : 'Add a property first, then turn a specific evidence gap into a focused recapture mission.'}</p>{hasProperties ? <button type="button" onClick={onCreate} className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-3.5 py-2 text-[12px] font-bold text-text-inverse"><Plus size={15} /> Start mission</button> : <Link to="/add-property" className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-3.5 py-2 text-[12px] font-bold text-text-inverse">Add property <ArrowRight size={15} /></Link>}</div>
 }
 
-function MissionDetail({ mission, onApprove, approving }: { mission: RecaptureMission | null; onApprove: (mission: RecaptureMission) => void; approving: boolean }) {
+function MissionDetail({ mission, onApprove, approving, demoMode, onDemoAction }: {
+  mission: RecaptureMission | null
+  onApprove: (mission: RecaptureMission) => void
+  approving: boolean
+  demoMode: boolean
+  onDemoAction: (mission: RecaptureMission, outcome: 'capture' | 'follow_up' | 'resolved' | 'replay') => void
+}) {
   if (!mission) return <aside className="rounded-2xl border border-border bg-surface p-6 shadow-subtle"><p className="text-[12px] font-semibold text-text-secondary">MISSION TRACE</p><h2 className="mt-3 text-[18px] font-bold">Select a mission to inspect its decisions.</h2><p className="mt-2 text-[13px] leading-6 text-text-secondary">The trace will show the policy result and each connector receipt, so a realtor can see what actually happened.</p></aside>
   const status = statusView(mission.status)
   const gapEvent = mission.events?.find((event) => event.action === 'gap_detected')
   const captureUrl = typeof gapEvent?.payload.captureUrl === 'string' ? gapEvent.payload.captureUrl : ''
   return <aside className="rounded-2xl border border-border bg-surface p-5 shadow-subtle xl:sticky xl:top-5 xl:h-fit"><div className="flex items-start justify-between gap-3"><div><p className="text-[10.5px] font-bold tracking-[0.13em] text-text-secondary">MISSION TRACE</p><h2 className="mt-1 text-[18px] font-bold">{mission.from_space ? `${mission.from_space} → ${mission.to_space}` : gapLabels[mission.gap_type]}</h2></div><span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10.5px] font-bold ${status.tone}`}>{status.label}</span></div>
     <div className="mt-5 rounded-xl bg-raised-2/65 p-3.5"><p className="text-[10px] font-bold tracking-[0.1em] text-text-secondary">FIELD INSTRUCTION</p><p className="mt-2 text-[13px] leading-5 text-text-primary">{mission.capture_instruction}</p></div>
-    <div className="mt-5 border-t border-border pt-4"><p className="text-[10px] font-bold tracking-[0.1em] text-text-secondary">AUDIT LOG</p><div className="mt-3 space-y-3">{(mission.events || []).length === 0 ? <p className="text-[12px] text-text-secondary">The mission was created. Dispatch events will appear here.</p> : mission.events?.map((event) => { const Icon = connectorIcon(event.external_app); return <div key={event.id} className="flex gap-2.5"><span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><Icon size={13} /></span><div className="min-w-0"><p className="text-[12px] font-semibold text-text-primary">{event.action.replaceAll('_', ' ')}</p><p className="mt-0.5 text-[10.5px] text-text-secondary">{new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(event.created_at))}{event.external_ref ? ` · ${event.external_app || 'connector'} receipt` : ''}</p></div></div> })}</div></div>
+    <div className="mt-5 border-t border-border pt-4"><p className="text-[10px] font-bold tracking-[0.1em] text-text-secondary">AUDIT LOG</p><div className="mt-3 space-y-3">{(mission.events || []).length === 0 ? <p className="text-[12px] text-text-secondary">The mission was created. Dispatch events will appear here.</p> : mission.events?.map((event) => { const Icon = connectorIcon(event.external_app); const simulated = event.payload?.simulated === true || event.external_ref?.startsWith('demo:'); return <div key={event.id} className="flex gap-2.5"><span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><Icon size={13} /></span><div className="min-w-0"><p className="text-[12px] font-semibold text-text-primary">{event.action.replaceAll('_', ' ')}</p><p className="mt-0.5 text-[10.5px] text-text-secondary">{new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(event.created_at))}{event.external_ref ? ` · ${simulated ? 'simulated ' : ''}${event.external_app || 'connector'} receipt` : ''}</p></div></div> })}</div></div>
     {mission.status === 'awaiting_realtor_approval' && <button type="button" disabled={approving} onClick={() => onApprove(mission)} className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-3.5 py-2.5 text-[12.5px] font-bold text-text-inverse disabled:opacity-60">{approving ? <LoaderCircle className="animate-spin" size={16} /> : <CheckCircle2 size={16} />} Approve & dispatch</button>}
-    {captureUrl && ['scheduled', 'needs_follow_up', 'capture_uploaded'].includes(mission.status) && <Link to={captureUrl} className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-border px-3.5 py-2.5 text-[12.5px] font-bold text-text-primary hover:bg-raised-2"><ExternalLink size={15} /> Open secure capture link</Link>}
+    {captureUrl && !demoMode && ['scheduled', 'needs_follow_up', 'capture_uploaded'].includes(mission.status) && <Link to={captureUrl} className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-border px-3.5 py-2.5 text-[12.5px] font-bold text-text-primary hover:bg-raised-2"><ExternalLink size={15} /> Open secure capture link</Link>}
+    {demoMode && <div className="mt-4 rounded-xl border border-dashed border-line-strong bg-raised-2/45 p-3"><p className="text-[10px] font-bold tracking-[0.1em] text-text-secondary">DEMO CONTROLS</p><p className="mt-1 text-[11px] leading-4 text-text-secondary">These show the expected state transitions without sending an external message.</p><div className="mt-3 flex flex-wrap gap-2">{mission.status === 'scheduled' && <button type="button" onClick={() => onDemoAction(mission, 'capture')} className="rounded-md border border-border bg-surface px-2.5 py-1.5 text-[10.5px] font-bold hover:bg-surface-elevated">Record test footage</button>}{mission.status === 'capture_uploaded' && <><button type="button" onClick={() => onDemoAction(mission, 'follow_up')} className="rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-[10.5px] font-bold text-accent">Show insufficient result</button><button type="button" onClick={() => onDemoAction(mission, 'resolved')} className="rounded-md border border-success/25 bg-success/10 px-2.5 py-1.5 text-[10.5px] font-bold text-success">Mark verified</button></>}{['awaiting_realtor_approval', 'scheduled', 'capture_uploaded', 'needs_follow_up', 'resolved'].includes(mission.status) && <button type="button" onClick={() => onDemoAction(mission, 'replay')} className="rounded-md border border-border bg-surface px-2.5 py-1.5 text-[10.5px] font-bold hover:bg-surface-elevated">Replay same gap</button>}</div></div>}
   </aside>
 }
 
