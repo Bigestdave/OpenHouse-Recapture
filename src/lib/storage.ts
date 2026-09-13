@@ -67,3 +67,4 @@ export async function uploadPropertyMedia(
   if (signedUrlError || !data?.signedUrl) throw new Error('Media uploaded but a secure preview URL could not be created.')
   return data.signedUrl
 }
+

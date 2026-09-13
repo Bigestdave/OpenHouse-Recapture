@@ -41,3 +41,4 @@ export function useStageAutoFollow(productionId: string | null) {
     }
   }, [lastEvent, productionId, location.pathname, navigate])
 }
+

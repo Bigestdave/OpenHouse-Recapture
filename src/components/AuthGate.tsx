@@ -45,3 +45,4 @@ export function AuthGate({ children }: AuthGateProps) {
   if (!isAuthed) return <AuthScreen />;
   return <>{children}</>;
 }
+

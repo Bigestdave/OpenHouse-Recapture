@@ -27,3 +27,4 @@ dist-ssr
 *.sw?
 historical_archive/
 supabase/.temp/
+

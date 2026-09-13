@@ -12,3 +12,4 @@ under one team-owned Google account.
 The Google bridge has no browser credentials and does not receive the Supabase
 service key. Do not put its shared secret in Vite variables, a committed `.env`,
 or the client application.
+

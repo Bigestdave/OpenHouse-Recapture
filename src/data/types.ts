@@ -173,3 +173,4 @@ export interface StoreState {
   bookings: Booking[];
   initialized: boolean;
 }
+

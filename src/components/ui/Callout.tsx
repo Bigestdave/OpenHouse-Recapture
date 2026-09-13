@@ -22,3 +22,4 @@ export function Callout({ children, icon, className = '' }: CalloutProps) {
     </div>
   )
 }
+

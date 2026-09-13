@@ -11,3 +11,4 @@ export const isDemoMode = configuredMode === 'demo'
 export const isProductionMode = !isDemoMode
 
 export const runtimeModeLabel = isDemoMode ? 'Demo mode' : 'Production mode'
+

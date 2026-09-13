@@ -68,3 +68,4 @@ The acceptance set is in [`docs/recapture-evaluation.md`](./docs/recapture-evalu
 ## Foundation disclosure
 
 OpenHouse’s property workspace and evidence data model were an existing foundation. The Recapture agent layer—the durable mission schema, policy and idempotency logic, connector orchestration, external receipts, audit trace, and evaluation suite—is the hackathon work in this repository.
+

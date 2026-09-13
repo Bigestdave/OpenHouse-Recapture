@@ -54,3 +54,4 @@ export const stagger = (staggerChildren = 0.08, delayChildren = 0): Variants => 
 export const crossfade: Transition = { duration: 0.5, ease: EASE_OUT };
 
 export { EASE_OUT };
+

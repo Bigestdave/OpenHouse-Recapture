@@ -27,3 +27,4 @@ export function FrameImage({ src, alt, className, imgClassName }: FrameImageProp
     </div>
   );
 }
+

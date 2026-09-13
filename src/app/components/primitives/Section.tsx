@@ -24,3 +24,4 @@ export function Section({ children, className, id, spacing = "default" }: Sectio
     </section>
   );
 }
+

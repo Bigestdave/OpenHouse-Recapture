@@ -106,3 +106,4 @@ create policy "members can read analysis runs" on public.analysis_runs for selec
 using (exists (select 1 from public.properties p where p.id = property_id and public.is_workspace_member(p.workspace_id)));
 create policy "members can read experience versions" on public.experience_versions for select to authenticated
 using (exists (select 1 from public.properties p where p.id = property_id and public.is_workspace_member(p.workspace_id)));
+

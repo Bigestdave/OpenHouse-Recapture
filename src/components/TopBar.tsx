@@ -146,3 +146,4 @@ export function TopBar({ showElapsed = true, showPause = true, production: produ
     </header>
   )
 }
+

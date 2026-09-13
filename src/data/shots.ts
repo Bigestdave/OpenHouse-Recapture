@@ -42,3 +42,4 @@ export const sidebarSteps = [
 ] as const
 
 export type StepName = (typeof sidebarSteps)[number]
+

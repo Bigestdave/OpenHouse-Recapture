@@ -92,3 +92,4 @@ If you need to redeploy later, use the local `supabase/functions/` source with t
 - Add a background worker and retries for actual Gemini analysis and experience building.
 - Configure error monitoring, backups, a privacy policy, and a data-retention policy.
 - Run the Recapture golden cases in [`docs/recapture-evaluation.md`](recapture-evaluation.md) and report only their actual results.
+

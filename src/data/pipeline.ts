@@ -45,3 +45,4 @@ export function stageStep(stage?: string | null): (typeof SIDEBAR_STEPS)[number]
   if (s.startsWith('PLAN') || s === 'SHOT_PLANNING' || s === 'NORMALIZING_INPUT') return 'Plan'
   return 'Brief'
 }
+

@@ -190,3 +190,4 @@ export function ThumbShotStrip({ shots = fallbackShots, statuses, selected, onSe
   )
 }
 
+

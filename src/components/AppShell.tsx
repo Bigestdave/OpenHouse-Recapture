@@ -71,3 +71,4 @@ export function AppShell({ active, sidebarOverrides, sidebarBadges, topBarStatus
     </div>
   )
 }
+

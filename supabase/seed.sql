@@ -191,3 +191,4 @@ INSERT INTO capture_requests (
   'tunde@lekkiagents.ng',
   '/#/capture/8-admiralty'
 ) ON CONFLICT (id) DO NOTHING;
+

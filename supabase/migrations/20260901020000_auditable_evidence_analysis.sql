@@ -45,3 +45,4 @@ using (exists (
   select 1 from public.properties p
   where p.id = property_id and public.is_workspace_member(p.workspace_id)
 ));
+

@@ -601,3 +601,4 @@ export const PIPELINE_PANELS = [
   ReviewPanel,
   AssemblyPanel,
 ];
+

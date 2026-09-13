@@ -10,3 +10,4 @@ export function StatusIcon({ status, size = 18 }: { status: ShotStatus; size?: n
     default: return <CircleOutline size={size} />
   }
 }
+

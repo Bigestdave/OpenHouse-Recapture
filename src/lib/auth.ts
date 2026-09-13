@@ -181,3 +181,4 @@ export function useAuth(): AuthState {
 
   return { user, session, loading, isConfigured: isSupabaseConfigured, profile }
 }
+

@@ -61,3 +61,4 @@ using (public.is_workspace_member(workspace_id));
 create policy "members can manage imported listings" on public.imported_listings for all to authenticated
 using (public.is_workspace_member(workspace_id))
 with check (public.is_workspace_member(workspace_id));
+

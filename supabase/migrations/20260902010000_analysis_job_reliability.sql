@@ -12,3 +12,4 @@ alter table public.workflow_jobs
 create index if not exists workflow_jobs_retry_idx
   on public.workflow_jobs(status, next_attempt_at)
   where status = 'failed';
+

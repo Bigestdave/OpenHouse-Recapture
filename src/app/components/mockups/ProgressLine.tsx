@@ -24,3 +24,4 @@ export function ProgressLine({ value, className, height = "h-[3px]" }: ProgressL
     </div>
   );
 }
+
