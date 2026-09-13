@@ -2,6 +2,9 @@
 
 **One missing 20-second proof can stop a property from being ready for the marketplaces where buyers already search. OpenHouse Recapture turns that gap into one precise, auditable field mission.**
 
+> **Two-minute demo:** Add the final public video URL here before submitting.
+> **System and reliability brief:** [`docs/submission-brief.md`](./docs/submission-brief.md)
+
 It is a multi-step operations agent for small real-estate teams. Starting from a bounded media-evidence gap, it writes a specific recapture instruction, applies a deterministic policy, coordinates the field handoff, and keeps a durable record of every outcome.
 
 ## The workflow
@@ -57,9 +60,29 @@ npx supabase functions deploy openhouse-recapture --no-verify-jwt
 
 The copied original OpenHouse project is intentionally separate from this repository and is not modified by these instructions.
 
+### Demo mode for judges
+
+For a safe, self-contained walkthrough that does not create an external
+calendar event or send a message, run with:
+
+```text
+VITE_OPENHOUSE_MODE=demo
+```
+
+Use **Quick demo login**, then open **Recapture agent** from the sidebar. The
+screen explicitly labels its connector receipts as simulated. See
+[`docs/judge-demo.md`](./docs/judge-demo.md) for separate demo and production
+deployment guidance.
+
 ## Reliability evidence
 
-The acceptance set is in [`docs/recapture-evaluation.md`](./docs/recapture-evaluation.md). It tests the conditions that make this an agent rather than a notification script: safe scheduling, duplicate prevention, escalation, and honest resolution decisions. Run it against the real connectors before quoting any result in a demo or submission.
+Run `npm run evaluate:recapture` for the deterministic policy-contract set.
+The full methodology and the live-connector checklist are in
+[`docs/recapture-evaluation.md`](./docs/recapture-evaluation.md). It tests the
+conditions that make this an agent rather than a notification script: safe
+scheduling, duplicate prevention, escalation, and honest resolution decisions.
+Run live connector checks before quoting any provider-delivery result in a demo
+or submission.
 
 ## Hackathon demo in one sentence
 
