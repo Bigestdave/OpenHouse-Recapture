@@ -1,15 +1,21 @@
-# OpenHouse production setup
+# OpenHouse Recapture setup
 
-This is the one-time setup needed to switch from the visual demo to the persisted MVP. Keep all secrets in Supabase or the deployment host; only the Supabase URL and publishable key belong in the Vite environment.
+This is the one-time setup needed to switch the **separate OpenHouse Recapture
+copy** from visual rehearsal to a persisted multi-app agent. Keep all secrets
+in Supabase or the connector host; only the Supabase URL and publishable key
+belong in the Vite environment.
 
 ## 1. Create the Supabase project
 
-1. Create a new Supabase project for OpenHouse.
+1. Create a new Supabase project for OpenHouse Recapture. Do not reuse or alter the project used by the earlier locked hackathon submission.
 2. In the SQL editor, run [`supabase/schema.sql`](../supabase/schema.sql).
 3. Run the migrations in timestamp order:
    - [`20260901000000_production_security.sql`](../supabase/migrations/20260901000000_production_security.sql)
    - [`20260901010000_workflow_data_model.sql`](../supabase/migrations/20260901010000_workflow_data_model.sql)
    - [`20260901020000_auditable_evidence_analysis.sql`](../supabase/migrations/20260901020000_auditable_evidence_analysis.sql)
+   - [`20260902000000_listing_imports_and_sources.sql`](../supabase/migrations/20260902000000_listing_imports_and_sources.sql)
+   - [`20260902010000_analysis_job_reliability.sql`](../supabase/migrations/20260902010000_analysis_job_reliability.sql)
+   - [`20260913000000_recapture_agent.sql`](../supabase/migrations/20260913000000_recapture_agent.sql)
 4. Do **not** run `supabase/seed.sql` in production. It is demo-only data.
 
 ## 2. Configure browser variables
@@ -26,7 +32,12 @@ Restart Vite after changing the file. Open `/#/diagnostics`; it should show prod
 
 ## 3. Configure Edge Functions
 
-The project needs two functions: `openhouse-workflow` and `openhouse-ai`. Both are already deployed for the current OpenHouse project. For each function, open **Edge Functions → function → Settings**, turn **Verify JWT with legacy secret** off, then save. The functions validate signed-in users themselves, while `openhouse-workflow` also has deliberately public routes for capture links, published property pages, and booking requests.
+The project needs three functions: `openhouse-workflow`, `openhouse-ai`, and
+`openhouse-recapture`. For each function, open **Edge Functions → function →
+Settings**, turn **Verify JWT with legacy secret** off, then save. The
+functions validate signed-in users themselves, while `openhouse-workflow` also
+has deliberately public routes for capture links, published property pages, and
+booking requests.
 
 Supabase automatically provides `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` inside every Edge Function. Those reserved names cannot be created manually, and must never be added to browser variables.
 
@@ -37,8 +48,19 @@ In **Edge Functions → Secrets**, set only the optional application secrets:
 | `GEMINI_API_KEY` | Optional for now; required only when enabling real Gemini analysis. |
 | `GEMINI_MODEL` | Optional; defaults to `gemini-3.7-flash`. |
 | `OPENHOUSE_ALLOWED_ORIGIN` | Your app URL, for example `https://app.example.com`. Leave unset during local testing. |
+| `RECAPTURE_CONNECTOR_MODE` | `demo` while rehearsing; `live` only when all real connector credentials below are set. |
+| `RECAPTURE_GOOGLE_BRIDGE_URL` | Deployed Google Apps Script Web App URL. |
+| `RECAPTURE_GOOGLE_BRIDGE_SECRET` | Long shared secret also stored in that Apps Script project. |
+| `TELEGRAM_BOT_TOKEN` | Token for the dedicated OpenHouse Recapture Telegram bot. |
+| `TELEGRAM_CHAT_ID` | Test chat/group destination for the capture instruction. |
 
 Never add `SUPABASE_SERVICE_ROLE_KEY` or `GEMINI_API_KEY` to a Vite `.env` file.
+
+For the Google Apps Script bridge, follow
+[`integrations/google-apps-script/README.md`](../integrations/google-apps-script/README.md).
+It creates the Calendar event, Drive folder, and Gmail summary under a team
+Google account. Use a disposable test calendar and test recipient during the
+hackathon.
 
 If you need to redeploy later, use the local `supabase/functions/` source with the Supabase CLI or the Dashboard editor. The repository includes `supabase/config.toml` so both functions retain their intentional JWT setting.
 
@@ -58,6 +80,10 @@ If you need to redeploy later, use the local `supabase/functions/` source with t
 5. Confirm the property reaches **Ready for review**.
 6. Publish from the property page and open the generated public link in an incognito browser.
 7. Submit a booking and verify it appears in the `bookings` table.
+8. Open `/#/recapture`, create a mission for a bounded gap, approve it, and
+   confirm the secure capture link moves its mission to **capture uploaded**.
+9. In `live` mode, open the matching Calendar event, Drive folder, Telegram
+   message, and Gmail message before claiming a real multi-app integration.
 
 ## Before launch
 
@@ -65,4 +91,4 @@ If you need to redeploy later, use the local `supabase/functions/` source with t
 - Add CAPTCHA or equivalent bot protection to public booking.
 - Add a background worker and retries for actual Gemini analysis and experience building.
 - Configure error monitoring, backups, a privacy policy, and a data-retention policy.
-- Connect one real notification provider and one listing-source provider only after this loop is stable.
+- Run the Recapture golden cases in [`docs/recapture-evaluation.md`](recapture-evaluation.md) and report only their actual results.

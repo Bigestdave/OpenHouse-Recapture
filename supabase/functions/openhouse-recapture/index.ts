@@ -114,7 +114,8 @@ type Receipt = { ref: string; simulated: boolean; data?: Json }
 async function googleBridge(action: ConnectorAction, payload: Json): Promise<Receipt> {
   const endpoint = Deno.env.get('RECAPTURE_GOOGLE_BRIDGE_URL')
   const secret = Deno.env.get('RECAPTURE_GOOGLE_BRIDGE_SECRET')
-  if (connectorMode === 'google_apps_script' && endpoint && secret) {
+  if (connectorMode === 'live') {
+    if (!endpoint || !secret) throw new ApiError('Google connector credentials are unavailable. The mission was not dispatched.', 503)
     // Apps Script Web Apps expose request bodies but not reliable custom request
     // headers, so the bridge secret lives in this server-to-server JSON body.
     const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ secret, action, payload }) })
@@ -122,13 +123,14 @@ async function googleBridge(action: ConnectorAction, payload: Json): Promise<Rec
     if (!response.ok || !text(result.ref, 300)) throw new ApiError(`Google connector could not complete ${action.replaceAll('_', ' ')}.`, 502)
     return { ref: text(result.ref, 300), simulated: false, data: asObject(result.data) }
   }
-  return { ref: `demo:${action}:${crypto.randomUUID()}`, simulated: true, data: { connectorMode } }
+  return { ref: `demo:${action}:${crypto.randomUUID()}`, simulated: true, data: { connectorMode: 'demo' } }
 }
 
 async function telegramSend(payload: Json): Promise<Receipt> {
   const token = Deno.env.get('TELEGRAM_BOT_TOKEN')
   const chatId = Deno.env.get('TELEGRAM_CHAT_ID')
-  if (connectorMode === 'live' && token && chatId) {
+  if (connectorMode === 'live') {
+    if (!token || !chatId) throw new ApiError('Telegram connector credentials are unavailable. The mission was not dispatched.', 503)
     const message = text(payload.message, 3500)
     const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: chatId, text: message }) })
     const result = asObject(await response.json().catch(() => ({})))
@@ -136,12 +138,34 @@ async function telegramSend(payload: Json): Promise<Receipt> {
     if (!response.ok || (typeof messageId !== 'number' && typeof messageId !== 'string')) throw new ApiError('Telegram could not deliver the capture mission.', 502)
     return { ref: String(messageId), simulated: false }
   }
-  return { ref: `demo:telegram:${crypto.randomUUID()}`, simulated: true, data: { connectorMode } }
+  return { ref: `demo:telegram:${crypto.randomUUID()}`, simulated: true, data: { connectorMode: 'demo' } }
 }
 
 async function log(missionId: string, action: string, actor: 'agent' | 'realtor' | 'photographer' | 'system', payload: Json = {}, externalApp?: string, externalRef?: string) {
   const { error } = await service.from('recapture_events').insert({ mission_id: missionId, action, actor, payload, external_app: externalApp ?? null, external_ref: externalRef ?? null })
   if (error) throw new ApiError('Could not record the mission audit event.', 502)
+}
+
+async function ensureCaptureRequest(property: { id: string; title: string }, providedId: string, gap: ReturnType<typeof gapFrom>, instruction: string) {
+  if (providedId) {
+    const { data: existing, error } = await service.from('capture_requests').select('id,capture_url').eq('id', providedId).eq('property_id', property.id).maybeSingle()
+    if (error || !existing) throw new ApiError('The supplied capture request does not belong to this property.', 409)
+    return { id: existing.id as string, captureUrl: existing.capture_url as string, created: false }
+  }
+
+  const id = crypto.randomUUID()
+  const token = crypto.randomUUID()
+  const now = Date.now()
+  const room = gap.toSpace || gap.fromSpace || 'Evidence recapture'
+  const captureUrl = `/capture/${token}`
+  const { error } = await service.from('capture_requests').insert({
+    id, property_id: property.id, property_title: property.title, room, reason: gap.reason,
+    instructions: instruction, estimated_time: '20–30 second walkthrough', status: 'awaiting_capture',
+    recipient_name: 'Assigned photographer', capture_url: captureUrl, capture_token: token,
+    expires_at: new Date(now + 72 * 60 * 60 * 1000).toISOString(), created_at: now, updated_at: now,
+  })
+  if (error) throw new ApiError('Could not prepare the secure capture link.', 502)
+  return { id, captureUrl, created: true }
 }
 
 function plannedTime(value: unknown) {
@@ -161,8 +185,16 @@ async function startMission(userId: string, raw: unknown) {
   const instruction = await generateInstruction(gap)
   const scheduledFor = plannedTime(input.scheduledFor)
   const approvalRequired = input.approvalRequired !== false
+  // Check before preparing a capture link. A duplicate request must not create
+  // another link or a second photographer task.
+  const { data: prior } = await service.from('recapture_missions').select('*').eq('idempotency_key', idempotencyKey).maybeSingle()
+  if (prior) {
+    await log(prior.id, 'mission_deduplicated', 'agent', { idempotencyKey, requestedAt: new Date().toISOString() })
+    return { mission: prior, duplicate: true }
+  }
+  const capture = await ensureCaptureRequest(property, text(input.captureRequestId, 120), gap, instruction.instruction)
   const { data: mission, error } = await service.from('recapture_missions').insert({
-    property_id: property.id, capture_request_id: text(input.captureRequestId, 120) || null,
+    property_id: property.id, capture_request_id: capture.id,
     idempotency_key: idempotencyKey, gap_fingerprint: fingerprint, gap_type: gap.gapType,
     from_space: gap.fromSpace || null, to_space: gap.toSpace || null, severity: gap.severity,
     reason: gap.reason, capture_instruction: instruction.instruction,
@@ -173,11 +205,12 @@ async function startMission(userId: string, raw: unknown) {
   if (error?.code === '23505') {
     const { data: existing } = await service.from('recapture_missions').select('*').eq('idempotency_key', idempotencyKey).single()
     if (!existing) throw new ApiError('A matching mission already exists.', 409)
+    if (capture.created) await service.from('capture_requests').delete().eq('id', capture.id)
     await log(existing.id, 'mission_deduplicated', 'agent', { idempotencyKey, requestedAt: new Date().toISOString() })
     return { mission: existing, duplicate: true }
   }
   if (error || !mission) throw new ApiError('Could not create the recapture mission.', 502)
-  await log(mission.id, 'gap_detected', 'agent', { ...gap, fingerprint })
+  await log(mission.id, 'gap_detected', 'agent', { ...gap, fingerprint, captureRequestId: capture.id, captureUrl: capture.captureUrl })
   await log(mission.id, 'instruction_generated', 'agent', { source: instruction.source, instruction: instruction.instruction })
   await log(mission.id, 'policy_checked', 'agent', { approvalRequired, scheduledForProvided: Boolean(scheduledFor), result: mission.status })
   if (mission.status === 'awaiting_realtor_approval') await log(mission.id, 'awaiting_realtor_approval', 'agent', { reason: approvalRequired ? 'Realtor approval is required before a photographer is booked.' : 'A capture time has not been selected.' })

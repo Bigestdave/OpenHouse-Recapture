@@ -408,6 +408,18 @@ async function completePublicCapture(rawInput: unknown) {
   if (!storagePath.startsWith(`${capture.id}/`)) throw new WorkflowError('Invalid capture upload path.', 403)
   await service.from('media_assets').insert({ property_id: capture.property_id, capture_request_id: capture.id, kind: 'video', storage_bucket: 'captures', storage_path: storagePath, original_name: requireString(input.originalName, 'file name', 240), mime_type: requireString(input.mimeType, 'media type', 160), size_bytes: Number(input.sizeBytes) || 0, room_name: capture.room, verified: false, analysis_status: 'pending' })
   await service.from('capture_requests').update({ status: 'uploaded_pending_verification', attempt_count: (capture.attempt_count ?? 0) + 1, updated_at: Date.now() }).eq('id', capture.id)
+  // Recapture missions are a separate, durable operational record. Tie the
+  // secure mobile upload back to its mission so “footage received” is real
+  // state, not a dashboard-only label.
+  const { data: missions } = await service.from('recapture_missions')
+    .select('id,status').eq('capture_request_id', capture.id).in('status', ['scheduled', 'needs_follow_up'])
+  for (const mission of missions ?? []) {
+    await service.from('recapture_missions').update({ status: 'capture_uploaded' }).eq('id', mission.id)
+    await service.from('recapture_events').insert({
+      mission_id: mission.id, action: 'capture_received', actor: 'photographer',
+      payload: { assetPath: storagePath, captureRequestId: capture.id },
+    })
+  }
   await service.from('property_spaces').update({ captured: true, verified: false, confidence: 0, issue: 'New capture uploaded; awaiting evidence analysis.', updated_at: new Date().toISOString() }).eq('property_id', capture.property_id).eq('name', capture.room)
   await service.from('properties').update({ status: 'checking_media', updated_at: Date.now() }).eq('id', capture.property_id)
   return { propertyId: capture.property_id, status: 'checking_media' }
